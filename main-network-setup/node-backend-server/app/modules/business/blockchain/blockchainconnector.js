@@ -107,6 +107,7 @@ class BlockchainConnector {
 		
 		console.log("args: ",args[0])
 		var targets = []
+		var message = {};
 		var invokeId = null;
 		var tx_id = null;
 		var eh = null;
@@ -189,7 +190,7 @@ class BlockchainConnector {
 	
 				//get the endorsement response from the peers and check for response status
 				let pass_results = results;
-				console.log("Results: ",results)
+				console.log("Results: ",results[0][0].details)
 				var proposalResponses = pass_results[0];
 
 				var proposal = pass_results[1];
@@ -274,16 +275,20 @@ class BlockchainConnector {
 				
 				return Promise.all([sendPromise]).then((results) => {
 					console.log("result: ",results);
-					return results[0];					
+					return results[0];
+									
 				}).catch((err) => {
 					console.log("Error while sending to the orderer: ",err);
-					return 'Failed to send instantiate transaction and get notifications within the timeout period.';
+					message.status= "FAILURE",
+					message.message= 'Failed to send instantiate transaction and get notifications within the timeout period.'
+					return message;
 				});
 			
 			}else{
-				var message={
-					status:"FAILURE"
-				}
+			
+				message.status= "FAILURE",
+				message.message= pass_results[0][0].details
+			
 				return message
 			}
 	
@@ -291,12 +296,15 @@ class BlockchainConnector {
 
 			//gets the final response from the orderer and check the response status
 			if (response.status === 'SUCCESS') {
+				
 				console.log("finalresponse: ",response);
-				callback(null,invokeId)
+				message.status = "SUCCESS";
+				message.message =invokeId
+				callback(null,message)
 			
 			} else {
 				console.log('Failed to order the transaction');
-				callback(null,null)
+				callback(null,message)
 			}
 		}, (err) => {
 

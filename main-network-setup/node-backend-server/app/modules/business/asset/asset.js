@@ -23,9 +23,11 @@ class Asset {
 					res.status(500).json(err.message);
 				}
 				var promises = [];
+				result = JSON.parse(result);
 				console.log("result: ",result);
-				for(var assetid in result){
-					
+				console.log("asset1: ",result[0]);
+				for (var i in result){
+					let assetid = result[i];
 					promises.push(new Promise((resolve, reject)=>{
 							self.blockchainconnector.queryChaincode(NETWORK_CONFIG,org,"getassetdetails",[assetid.toString()],function(err,assetDetails){
 								
@@ -102,8 +104,8 @@ class Asset {
 				res.status(500).json(err.message);
 			}else{
 				
-				if(response==null){
-					res.status(500).json("Transaction failed!! Please try after some time!!");
+				if(response.status=="FAILURE"){
+					res.status(500).json(response.message);
 				}else{
 						
 						self.database.getObject(self.collectionName,{id:assetid},function(err,assetObject){
@@ -117,7 +119,7 @@ class Asset {
 							
 							var arr = []
 							var txRecord = {
-								"id":response,
+								"id":response.message,
 								"task":"createasset",
 								"time":Date.now()
 							}
@@ -167,10 +169,11 @@ class Asset {
 				res.status(500).json(err.message);
 			}else{
 				
-				if(response==null){
-					res.status(500).json("Transaction failed!! Please try after some time!!");
-				}
-				self.database.getObject(self.collectionName,{id:assetid},function(err,assetObject){
+				if(response.status=="FAILURE"){
+					res.status(500).json(response.message);
+				}else{
+
+					self.database.getObject(self.collectionName,{id:assetid},function(err,assetObject){
 					
 						if(err!=null){
 							res.status(500).json(err.message);
@@ -179,9 +182,9 @@ class Asset {
 							
 							if(assetObject!=null){
 								
-								var arr = assetObject.tx
+								var arr = assetObject[0].tx
 								var txRecord = {
-									"id":response,
+									"id":response.message,
 									"task":"updateasset",
 									"time":Date.now()
 								}
@@ -205,7 +208,11 @@ class Asset {
 							}
 								
 						}
-				});
+					});
+
+
+				}
+				
 			}
 		})
 	}
@@ -227,10 +234,12 @@ class Asset {
 				res.status(500).json(err.message);
 			}else{
 				
-				if(response==null){
-					res.status(500).json("Transaction failed!! Please try after some time!!");
+				console.log("response: ",response)
+				if(response.status=="FAILURE"){
+					res.status(500).json(response.message);
 				}else{
-							self.database.getObject(self.collectionName,{id:assetid},function(err,assetObject){
+					
+					self.database.getObject(self.collectionName,{id:assetid},function(err,assetObject){
 						
 						if(err!=null){
 							res.status(500).json(err.message);
@@ -239,9 +248,10 @@ class Asset {
 							
 							if(assetObject!=null){
 								
-								var arr = assetObject.tx
+								console.log(assetObject[0])
+								var arr = assetObject[0].tx
 								var txRecord = {
-									"id":response,
+									"id":response.message,
 									"task":"transferasset",
 									"time":Date.now()
 								}
