@@ -125,7 +125,7 @@ function createChannel(channel_name,org1mspid,admin){
 					return installchaincode(config.chaincode.chaincodepath,config.chaincode.chaincodeid,config.chaincode.chaincodeversion,config.organization[3].peers,config.organization[3].admin,config.organization[3].mspid,config.organization[3].tlscertpath)
 				}).then(()=>{
 
-					instantiateChaincode(config.channel.channelname,orgdetails,config.organization[0].tlscertpath,config.organization[0].mspid,config.organization[0].admin,config.chaincode.chaincodepath,config.chaincode.chaincodeversion,config.chaincode.chaincodeid,config.organization[0].peers)
+					instantiateChaincode(config.channel.channelname,orgdetails,config.organization[0].tlscertpath,config.organization[0].mspid,config.organization[0].admin,config.chaincode.chaincodepath,config.chaincode.chaincodeversion,config.chaincode.chaincodeid,config.organization[0].peers,config.organization[1].mspid,config.organization[2].mspid,config.organization[3].mspid)
 				
 				});
 			});
@@ -317,7 +317,7 @@ function installchaincode(chaincodepath,chaincodeid,chaincodeversion,peers,admin
   });
 }
 
-function instantiateChaincode(channel_name,orgdetails,tlscertpath,mspid,admin,chaincodePath, chaincodeVersion,chaincodeID,eventpeers){
+function instantiateChaincode(channel_name,orgdetails,tlscertpath,mspid,admin,chaincodePath, chaincodeVersion,chaincodeID,eventpeers,mspid2,mspid3,mspid4){
 
 	console.log("************ INSTANTIATING CHAINCODE **********");
 	//sets the timeout for the request, make sure you set enough time out because on the request peer build a container for chaincode 
@@ -375,7 +375,7 @@ function instantiateChaincode(channel_name,orgdetails,tlscertpath,mspid,admin,ch
 	
 	}).then(() => {
 	
-			let request = buildChaincodeProposal(client, chaincodePath, chaincodeVersion,chaincodeID,mspid);
+			let request = buildChaincodeProposal(client, chaincodePath, chaincodeVersion,chaincodeID,mspid,mspid2,mspid3,mspid4);
 			tx_id = request.txId;
 			return channel.sendInstantiateProposal(request);
 	
@@ -503,7 +503,7 @@ function readAllFiles(dir) {
 	return certs;
 }
 
-function buildChaincodeProposal(client, chaincode_path, version,chaincodeID,mspid){
+function buildChaincodeProposal(client, chaincode_path, version,chaincodeID,mspid1,mspid2,mspid3,mspid4){
 	
 	var tx_id = client.newTransactionID();
 
@@ -514,7 +514,7 @@ function buildChaincodeProposal(client, chaincode_path, version,chaincodeID,mspi
 		chaincodeId: chaincodeID,
 		chaincodeVersion: version,
 		fcn: 'init',
-		args: ["acc1","100","acc2","200"],
+		args: [],
 		txId: tx_id,
 		// use this to demonstrate the following policy:
 		// 'if signed by org1 admin, then that's the only signature required,
@@ -522,14 +522,16 @@ function buildChaincodeProposal(client, chaincode_path, version,chaincodeID,mspi
 		// when members (non-admin) from both orgs signed'
 		'endorsement-policy': {
 			identities: [
-				{ role: { name: 'member', mspId: mspid }},
-				{ role: { name: 'member', mspId: mspid }},
-				{ role: { name: 'admin', mspId: mspid}}
+				{ role: { name: 'member', mspId: mspid1 }},
+				{ role: { name: 'member', mspId: mspid2 }},
+				{ role: { name: 'member', mspId: mspid3 }},
+				{ role: { name: 'member', mspId: mspid4 }},
+				{ role: { name: 'admin', mspId: mspid1}}
 			],
 			policy: {
 				'1-of': [
-					{ 'signed-by': 2},
-					{ '2-of': [{ 'signed-by': 0}, { 'signed-by': 1 }]}
+					{ 'signed-by': 4},
+					{ '1-of': [{ 'signed-by': 0}, { 'signed-by': 1 }, { 'signed-by': 2 }, { 'signed-by': 3 }]}
 				]
 			}
 		}

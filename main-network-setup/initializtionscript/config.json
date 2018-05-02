@@ -10,7 +10,7 @@
     "channelartifacts":"../channel-artifacts/channel.tx"
   },
   "chaincode":{
-      "chaincodepath":"chaincode/helloWorld",
+      "chaincodepath":"chaincode/assetmanagement",
       "chaincodeid":"assetcc",
       "chaincodeversion":"v2"
   },
