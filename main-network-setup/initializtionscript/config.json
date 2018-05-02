@@ -2,7 +2,7 @@
   "tls":false,
   "orderer":{
     "name":"orderer.example.com",
-    "url":"grpc://10.72.23.98:7050",
+    "url":"grpc://10.72.23.93:7050",
     "tlscertpath":"../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"
   },
   "channel":{
@@ -10,14 +10,14 @@
     "channelartifacts":"../channel-artifacts/channel.tx"
   },
   "chaincode":{
-      "chaincodepath":"chaincode",
-      "chaincodeid":"mychaincode",
-      "chaincodeversion":"v1"
+      "chaincodepath":"chaincode/helloWorld",
+      "chaincodeid":"assetcc",
+      "chaincodeversion":"v2"
   },
   "organization":[{
       "mspid":"Org1MSP",
       "name":"org1.example.com",
-      "peers":[{"url":"grpc://10.72.23.98:7051","eventurl":"grpc://10.72.23.98:7053","name":"peer0.org1.example.com"}],
+      "peers":[{"url":"grpc://10.72.23.93:7051","eventurl":"grpc://10.72.23.93:7053","name":"peer0.org1.example.com"}],
       "admin":{
         "keypath":"../crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore",
         "certpath":"../crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts",
@@ -27,7 +27,7 @@
   },{
       "mspid":"Org2MSP",
       "name":"org2.example.com",
-      "peers":[{"url":"grpc://10.72.23.98:8051","eventurl":"grpc://10.72.23.98:8053","name":"peer0.org2.example.com"}],
+      "peers":[{"url":"grpc://10.72.23.93:8051","eventurl":"grpc://10.72.23.93:8053","name":"peer0.org2.example.com"}],
       "admin":{
         "keypath":"../crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore",
         "certpath":"../crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts",
@@ -37,7 +37,7 @@
   },{
       "mspid":"Org3MSP",
       "name":"org3.example.com",
-      "peers":[{"url":"grpc://10.72.23.98:9051","eventurl":"grpc://10.72.23.98:9053","name":"peer0.org3.example.com"}],
+      "peers":[{"url":"grpc://10.72.23.93:9051","eventurl":"grpc://10.72.23.93:9053","name":"peer0.org3.example.com"}],
       "admin":{
         "keypath":"../crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp/keystore",
         "certpath":"../crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp/signcerts",
@@ -47,7 +47,7 @@
   },{
       "mspid":"Org4MSP",
       "name":"org4.example.com",
-      "peers":[{"url":"grpc://10.72.23.98:10051","eventurl":"grpc://10.72.23.98:10053","name":"peer0.org4.example.com"}],
+      "peers":[{"url":"grpc://10.72.23.93:10051","eventurl":"grpc://10.72.23.93:10053","name":"peer0.org4.example.com"}],
       "admin":{
         "keypath":"../crypto-config/peerOrganizations/org4.example.com/users/Admin@org4.example.com/msp/keystore",
         "certpath":"../crypto-config/peerOrganizations/org4.example.com/users/Admin@org4.example.com/msp/signcerts",

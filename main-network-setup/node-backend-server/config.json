@@ -1,0 +1,8 @@
+{
+	"database":{
+	
+		"host":"mongodb://10.72.23.93",
+		"port":27017
+	},
+	"secret":"serverKey"
+}

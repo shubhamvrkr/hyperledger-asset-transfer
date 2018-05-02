@@ -1,6 +1,7 @@
 package main
 
 import (
+	
 	"errors"
 	"fmt"
 	"strings"
@@ -33,7 +34,7 @@ type asset struct {
 
 func (t *AssetManagement) Init(stub shim.ChaincodeStubInterface) pb.Response  {
 
-	logger.Info("########### asset management deployed successsfully ###########")
+	logger.Info("########### updated asset management deployed successsfully ###########")
 	return shim.Success(nil);
 
 }
@@ -93,7 +94,7 @@ func (t *AssetManagement) createAsset(stub shim.ChaincodeStubInterface, args []s
 
 	//args[0] = assetid, args[1] = metadata, args[2] = parent
 	assetId = args[0];
-
+	fmt.Printf("\nassetId: "+assetId);
 	//check if asset exits
 	assetpresent,err :=  isAssetPresent(assetId,stub);
 	if(err!=nil){
@@ -103,7 +104,10 @@ func (t *AssetManagement) createAsset(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Asset witht the id "+assetId+" already exits!!")
 	}
 
-	owner = getCommonName(stub);
+	owner,err = getCommonName(stub);
+	if(err!=nil){
+		return shim.Error("Failed to create asset: "+ err.Error())
+	}
 	fmt.Printf("\nOwner: "+owner);
 	metadata = args[1]
 	if len(strings.TrimSpace(args[2])) > 0 {
@@ -139,6 +143,7 @@ func (t *AssetManagement) createAsset(stub shim.ChaincodeStubInterface, args []s
 	if err != nil {
 			return shim.Error("Failed to create the asset: "+err.Error())
 	}
+	fmt.Printf("\nCreating asset(JSON): \n", string(assetJSONasBytes))
 	//store the asset in state
 	err = stub.PutState(assetId, assetJSONasBytes)
 	if err != nil {
@@ -175,7 +180,10 @@ func (t *AssetManagement) transferAsset(stub shim.ChaincodeStubInterface, args [
 		return shim.Error("Asset witht the id "+assetid+" doesnt exits!!")
 	}
 	//get owneer from cert
-	owner = getCommonName(stub);
+	owner,err = getCommonName(stub);
+	if(err!=nil){
+		return shim.Error("Failed to transfer asset: "+ err.Error())
+	}
 
 	fmt.Printf("Owner: ", owner);
 	fmt.Printf("New owner: ", owner);
@@ -259,7 +267,10 @@ func (t *AssetManagement) updateAsset(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Asset witht the id "+assetid+" doesnt exits!!")
 	}
 	//get owner from cert
-	owner = getCommonName(stub);
+	owner,err = getCommonName(stub);
+	if(err!=nil){
+		return shim.Error("Failed to update asset: "+ err.Error())
+	}
 
 	fmt.Printf("Owner: ", owner);
 	fmt.Printf("Metadata: ", metadata);
@@ -314,10 +325,14 @@ func (t *AssetManagement) getAssetsOwned(stub shim.ChaincodeStubInterface, args 
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
-	owner = getCommonName(stub);
+	owner,err := getCommonName(stub);
+	if(err!=nil){
+		return shim.Error("Failed to get asset of organization: "+ err.Error())
+	}
 	fmt.Printf("Owner: ", owner);
 	// Get the state from the ledger
 	ownedAssetBytes, err := stub.GetState(owner)
+	fmt.Printf("ownedAssetBytes: ", string(ownedAssetBytes));
 	if err != nil {
 
 		return shim.Error("Failed to get state for asset list: "+err.Error())
@@ -333,17 +348,17 @@ func (t *AssetManagement) getAssetHistory(stub shim.ChaincodeStubInterface, args
 	var assetid string // Entities
 	
 	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+		return shim.Error("Incorrect number of arguments. Expecting name of the asset to query")
 	}
 
 	assetid = args[0];
-
+	fmt.Printf("assetid: ", assetid);
 	assetpresent,err :=  isAssetPresent(assetid,stub);
 	if(err!=nil){
 		return shim.Error("Failed to get asset: "+ err.Error())
 	}
 	if !assetpresent {
-		return shim.Error("Asset witht the id "+assetid+" doesnt exits!!")
+		return shim.Error("Asset with the id "+assetid+" doesnt exits!!")
 	}
 
 	resultsIterator, err := stub.GetHistoryForKey(assetid)
@@ -420,25 +435,31 @@ func (t *AssetManagement) getAssetDetails(stub shim.ChaincodeStubInterface, args
 		return shim.Error("Failed to get asset: "+ err.Error())
 	}
 	if !assetpresent {
+		
 		return shim.Error("Asset with the id "+assetid+" doesnt exits!!")
 	}
 	assetDetailsBytes, err := stub.GetState(assetid)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	
 	return shim.Success(assetDetailsBytes)
 }
 
 //get the user id from the certificate
-func getCommonName(stub shim.ChaincodeStubInterface) string {
+func getCommonName(stub shim.ChaincodeStubInterface) (string, error) {
 
-	id, _ := cid.GetID(stub)
-	sDec, _ := b64.StdEncoding.DecodeString(id)
+	id, err := cid.GetID(stub)
+	if err != nil {
+		return "",err
+	}
+	sDec, err := b64.StdEncoding.DecodeString(id)
+	if err != nil {
+		return "",err
+	}
 	temp := strings.Split(string(sDec), "::");
 	subject := strings.Split(temp[1],",");
 	cn := strings.TrimSpace(strings.Replace(subject[0],"CN=","",-1))
-	return cn;
+	return cn,nil;
 }
 
 //check if the asset with the same id exits
@@ -462,7 +483,7 @@ func addAssetToOwnerList(assetId string, owner string, stub shim.ChaincodeStubIn
 	assetOwnedbytes, err := stub.GetState(owner)
 	if err != nil {
 		return false,err
-	} else if assetOwnedbytes ==nil{
+	} else if assetOwnedbytes == nil{
 			assetOwned = append(assetOwned,assetId)
 	}else{
 		marsl_err := json.Unmarshal([]byte(assetOwnedbytes), &assetOwned)
@@ -480,7 +501,6 @@ func addAssetToOwnerList(assetId string, owner string, stub shim.ChaincodeStubIn
 		return false,err
 	}
 	return true,nil;
-
 }
 
 //remove mapping of assetid from ownerlist

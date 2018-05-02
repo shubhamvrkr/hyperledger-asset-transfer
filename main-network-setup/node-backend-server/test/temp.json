@@ -1,0 +1,8 @@
+{
+	"asset":{
+		
+		"id":"asset01",
+		"metadata":"{ \"color\":\"blue\",\"manufacturer\":\"org1.example.com\"}",
+		"parents":" "
+	}
+}

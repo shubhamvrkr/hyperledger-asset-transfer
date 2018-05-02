@@ -410,7 +410,7 @@ function instantiateChaincode(channel_name,orgdetails,tlscertpath,mspid,admin,ch
 			eh = client.newEventHub();
 			let data = fs.readFileSync(tlscertpath);
 			if(tls){
-				eh.setPeerAddr(peers[0].eventurl, {
+				eh.setPeerAddr(eventpeers[0].eventurl, {
 						pem: Buffer.from(data).toString(),
 						'ssl-target-name-override': peers[0].name
 					});
@@ -418,7 +418,8 @@ function instantiateChaincode(channel_name,orgdetails,tlscertpath,mspid,admin,ch
 				eh.setPeerAddr(eventpeers[0].eventurl);
 			}
 			eh.connect();
-			
+			console.log("connecting to event hub")
+			console.log(eh.isconnected())
 			let txPromise = new Promise((resolve, reject) => {
 				let handle = setTimeout(() => {
 					eh.disconnect();
@@ -431,8 +432,11 @@ function instantiateChaincode(channel_name,orgdetails,tlscertpath,mspid,admin,ch
 					eh.unregisterTxEvent(deployId);
 					eh.disconnect();
 					if (code !== 'VALID') {
+
+						console.log("Instantiate tx is invalid")
 						reject();
 					} else {
+						console.log("Instantiate tx is valid")
 						resolve();
 					}
 				});
